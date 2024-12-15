@@ -1,0 +1,243 @@
+if game.PlaceId == 11177482306 then
+    -- Load OrionLib for the GUI
+    local OrionLib = loadstring(game:HttpGet('https://raw.githubusercontent.com/shlexware/Orion/main/source'))()
+    
+    -- Create Window
+    local Window = OrionLib:MakeWindow({
+        Name = "Goat Hub for Street Wars 2",
+        HidePremium = false,
+        SaveConfig = true,
+        ConfigFolder = "GoatHub"
+    })
+
+    -- Global values for toggles
+    _G.killAura = false
+    _G.godmode = false
+    _G.onePunch = false
+    _G.dupeGun = false
+    _G.speed = 50
+    _G.jumpPower = 50
+
+    -- Function to enable GodMode (keeps health at max)
+    function enableGodMode()
+        local player = game.Players.LocalPlayer
+        local character = player.Character or player.CharacterAdded:Wait()
+
+        if character and character:FindFirstChild("Humanoid") then
+            character.Humanoid:GetPropertyChangedSignal("Health"):Connect(function()
+                if _G.godmode and character.Humanoid.Health < character.Humanoid.MaxHealth then
+                    -- Set health back to max
+                    character.Humanoid.Health = character.Humanoid.MaxHealth
+                end
+            end)
+        end
+    end
+
+    -- Function for One Punch kill
+    function enableOnePunch()
+        local player = game.Players.LocalPlayer
+        local character = player.Character or player.CharacterAdded:Wait()
+
+        -- Loop to instantly kill enemies with one punch
+        while _G.onePunch do
+            if character and character:FindFirstChild("HumanoidRootPart") then
+                local target = nil
+                for _, obj in pairs(workspace:GetChildren()) do
+                    if obj:IsA("Model") and obj:FindFirstChild("Humanoid") and obj.Humanoid.Health > 0 then
+                        if (obj.HumanoidRootPart.Position - character.HumanoidRootPart.Position).Magnitude < 5 then
+                            target = obj
+                            break
+                        end
+                    end
+                end
+                if target then
+                    target.Humanoid.Health = 0  -- Instantly kill target
+                end
+            end
+            wait(0.1)
+        end
+    end
+
+    -- Function to duplicate guns by name
+    function dupeGun(weaponName)
+        local player = game.Players.LocalPlayer
+        local character = player.Character or player.CharacterAdded:Wait()
+
+        local weapon = game.ReplicatedStorage:FindFirstChild(weaponName)
+        if weapon then
+            local clonedWeapon = weapon:Clone()
+            clonedWeapon.Parent = character
+        else
+            OrionLib:MakeNotification({
+                Name = "Error",
+                Content = "Weapon not found!",
+                Image = "rbxassetid://4483345998",
+                Time = 5
+            })
+        end
+    end
+
+    -- Function to set speed and jump power
+    function setPlayerAttributes()
+        local player = game.Players.LocalPlayer
+        local character = player.Character or player.CharacterAdded:Wait()
+
+        if character and character:FindFirstChild("Humanoid") then
+            character.Humanoid.WalkSpeed = _G.speed
+            character.Humanoid.JumpPower = _G.jumpPower
+        end
+    end
+
+    -- Teleport Functions
+    function teleportToStore(storeLocation)
+        local player = game.Players.LocalPlayer
+        local character = player.Character or player.CharacterAdded:Wait()
+
+        if character and character:FindFirstChild("HumanoidRootPart") then
+            character.HumanoidRootPart.CFrame = CFrame.new(storeLocation)
+        end
+    end
+
+    -- GUI Tabs
+    local trollingTab = Window:MakeTab({
+        Name = "Trolling",
+        Icon = "rbxassetid://4483345998",
+        PremiumOnly = false
+    })
+
+    local playerTab = Window:MakeTab({
+        Name = "Player",
+        Icon = "rbxassetid://4483345998",
+        PremiumOnly = false
+    })
+
+    local teleportTab = Window:MakeTab({
+        Name = "Teleport",
+        Icon = "rbxassetid://4483345998",
+        PremiumOnly = false
+    })
+
+    local lolTab = Window:MakeTab({
+        Name = "Lol",
+        Icon = "rbxassetid://4483345998",
+        PremiumOnly = false
+    })
+
+    local turfTab = Window:MakeTab({
+        Name = "Turf",
+        Icon = "rbxassetid://4483345998",
+        PremiumOnly = false
+    })
+
+    -- Trolling Tab Features
+    trollingTab:AddToggle({
+        Name = "Enable GodMode",
+        Default = false,
+        Callback = function(state)
+            _G.godmode = state
+            if state then
+                enableGodMode()
+            end
+        end
+    })
+
+    trollingTab:AddToggle({
+        Name = "Enable One Punch",
+        Default = false,
+        Callback = function(state)
+            _G.onePunch = state
+            if state then
+                enableOnePunch()
+            end
+        end
+    })
+
+    trollingTab:AddTextbox({
+        Name = "Duplicate Gun",
+        Default = "WeaponName",
+        TextDisappear = true,
+        Callback = function(weaponName)
+            dupeGun(weaponName)
+        end
+    })
+
+    -- Player Tab Features
+    playerTab:AddSlider({
+        Name = "Speed",
+        Min = 16,
+        Max = 200,
+        Default = 50,
+        Callback = function(value)
+            _G.speed = value
+            setPlayerAttributes()
+        end
+    })
+
+    playerTab:AddSlider({
+        Name = "Jump Power",
+        Min = 50,
+        Max = 200,
+        Default = 50,
+        Callback = function(value)
+            _G.jumpPower = value
+            setPlayerAttributes()
+        end
+    })
+
+    -- Teleport Tab Features
+    teleportTab:AddButton({
+        Name = "Teleport to Store 1",
+        Callback = function()
+            teleportToStore(Vector3.new(100, 10, 100))  -- Store 1 location
+        end
+    })
+
+    teleportTab:AddButton({
+        Name = "Teleport to Store 2",
+        Callback = function()
+            teleportToStore(Vector3.new(200, 10, 200))  -- Store 2 location
+        end
+    })
+
+    teleportTab:AddButton({
+        Name = "Teleport to Apartment 1",
+        Callback = function()
+            teleportToStore(Vector3.new(50, 10, 50))  -- Apartment 1 location
+        end
+    })
+
+    teleportTab:AddButton({
+        Name = "Teleport to Apartment 2",
+        Callback = function()
+            teleportToStore(Vector3.new(150, 10, 150))  -- Apartment 2 location
+        end
+    })
+
+    -- Lol Tab Features
+    lolTab:AddButton({
+        Name = "Give Korblox Item",
+        Callback = function()
+            -- Code for giving Korblox item
+        end
+    })
+
+    lolTab:AddButton({
+        Name = "Give Duck Head Accessory",
+        Callback = function()
+            -- Code for giving Duck Head accessory
+        end
+    })
+
+    -- Turf Tab Features
+    turfTab:AddButton({
+        Name = "RGD Turf Access",
+        Callback = function()
+            -- Code for RGD Turf access
+        end
+    })
+
+    -- Initialize the OrionLib GUI
+    OrionLib:Init()
+else
+    print("Not in the correct game!")
+end
